@@ -1,0 +1,28 @@
+# Strict PDB used to deliberately reproduce the node-drain/eviction constraint
+# during an AKS upgrade. maxUnavailable: 0 blocks voluntary eviction of any
+# webserver-deploy pod regardless of replica count, so `kubectl drain`/AKS
+# node upgrade will stall on nodes hosting these pods until the PDB is
+# relaxed or the pods are otherwise moved.
+{{- if .Values.pdb.webServer.enabled }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: webserver-pdb
+spec:
+  maxUnavailable: {{ .Values.pdb.webServer.maxUnavailable }}
+  selector:
+    matchLabels:
+      app: webserver-deploy
+{{- end }}
+{{- if .Values.pdb.resultServer.enabled }}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: resultserver-pdb
+spec:
+  maxUnavailable: {{ .Values.pdb.resultServer.maxUnavailable }}
+  selector:
+    matchLabels:
+      app: resultserver-deploy
+{{- end }}

@@ -3,9 +3,9 @@ kind: PersistentVolumeClaim
 metadata:
   name: mysql-pv-claim
 spec:
-  storageClassName: manual
+  storageClassName: {{ .Values.storageClass.name }}
   accessModes:
-    - ReadWriteOnce
+    - {{ .Values.mysql.storage.accessMode }}
   resources:
     requests:
-      storage: 10Gi
+      storage: {{ .Values.mysql.storage.size }}

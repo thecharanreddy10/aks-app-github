@@ -5,7 +5,7 @@ metadata:
     app: webserver-deploy
   name: webserver-deploy
 spec:
-  replicas: 1
+  replicas: {{ .Values.webServer.replicaCount }}
   selector:
     matchLabels:
       app: webserver-deploy
@@ -15,7 +15,8 @@ spec:
         app: webserver-deploy
     spec:
       containers:
-        - image: devenes/python_web_server:18.0
+        - image: "{{ .Values.webServer.image.repository }}:{{ .Values.webServer.image.tag }}"
+          imagePullPolicy: {{ .Values.webServer.image.pullPolicy }}
           name: webserver
           ports:
             - containerPort: 80
@@ -29,4 +30,18 @@ spec:
           envFrom:
             - configMapRef:
                 name: server-config
-          resources: {}
+          resources:
+            {{- toYaml .Values.webServer.resources | nindent 12 }}
+          livenessProbe:
+            httpGet:
+              path: {{ .Values.webServer.probes.path }}
+              port: 80
+            initialDelaySeconds: {{ .Values.webServer.probes.initialDelaySeconds }}
+            periodSeconds: {{ .Values.webServer.probes.periodSeconds }}
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.webServer.probes.path }}
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: {{ .Values.webServer.probes.periodSeconds }}
+

@@ -1,0 +1,16 @@
+{{- if .Values.storageClass.create }}
+# Azure Disk CSI storage class for MySQL. volumeBindingMode controls the
+# storage failure scenario: WaitForFirstConsumer (default) ties the disk to
+# the zone of the scheduled pod; Immediate provisions before scheduling and is
+# used to reproduce zone-mismatch mount failures on node replacement.
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: {{ .Values.storageClass.name }}
+provisioner: {{ .Values.storageClass.provisioner }}
+parameters:
+  skuName: {{ .Values.storageClass.skuName }}
+reclaimPolicy: {{ .Values.storageClass.reclaimPolicy }}
+volumeBindingMode: {{ .Values.storageClass.volumeBindingMode }}
+allowVolumeExpansion: {{ .Values.storageClass.allowVolumeExpansion }}
+{{- end }}

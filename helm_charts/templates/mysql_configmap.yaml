@@ -3,5 +3,5 @@ kind: ConfigMap
 metadata:
   name: mysql-config
 data:
-  MYSQL_USER: devenes
-  MYSQL_DATABASE: phonebook
+  MYSQL_USER: {{ .Values.mysql.user | quote }}
+  MYSQL_DATABASE: {{ .Values.mysql.database | quote }}

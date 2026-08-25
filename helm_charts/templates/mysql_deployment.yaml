@@ -5,7 +5,10 @@ metadata:
     app: mysql-deploy
   name: mysql-deploy
 spec:
-  replicas: 1
+  replicas: {{ .Values.mysql.replicaCount }}
+  # Recreate avoids two pods contending for the same ReadWriteOnce Azure Disk during a rolling update.
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: mysql-deploy
@@ -15,7 +18,8 @@ spec:
         app: mysql-deploy
     spec:
       containers:
-        - image: mysql:5.7
+        - image: "{{ .Values.mysql.image.repository }}:{{ .Values.mysql.image.tag }}"
+          imagePullPolicy: {{ .Values.mysql.image.pullPolicy }}
           name: mysql
           env:
             - name: MYSQL_ROOT_PASSWORD
@@ -42,7 +46,24 @@ spec:
                 configMapKeyRef:
                   name: mysql-config
                   key: MYSQL_DATABASE
-          resources: {}
+          ports:
+            - containerPort: 3306
+          resources:
+            {{- toYaml .Values.mysql.resources | nindent 12 }}
+          livenessProbe:
+            tcpSocket:
+              port: 3306
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - mysqladmin ping -h 127.0.0.1 -u root -p$MYSQL_ROOT_PASSWORD
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            failureThreshold: 6
           volumeMounts:
             - mountPath: /var/lib/mysql
               name: mysql-persistent-volume
@@ -50,3 +71,4 @@ spec:
         - name: mysql-persistent-volume
           persistentVolumeClaim:
             claimName: mysql-pv-claim
+

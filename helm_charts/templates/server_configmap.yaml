@@ -3,6 +3,6 @@ kind: ConfigMap
 metadata:
   name: server-config
 data:
-  MYSQL_USER: devenes
-  MYSQL_DATABASE: phonebook
+  MYSQL_USER: {{ .Values.mysql.user | quote }}
+  MYSQL_DATABASE: {{ .Values.mysql.database | quote }}
   MYSQL_DATABASE_HOST: mysql-service
